@@ -26,7 +26,9 @@ public class BBServer {
 
     @EventHandler
     public void serverStart(FMLServerStartingEvent event) {
-        if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
+        if (event.getServer().isDedicatedServer()) {
+            if(Config.Restart.command) event.registerServerCommand(new CommandRestart());
+        }
     }
 
     @EventHandler
