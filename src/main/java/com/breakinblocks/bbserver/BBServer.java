@@ -12,6 +12,7 @@ import org.apache.logging.log4j.Logger;
  * Main class.
  */
 @Mod(modid = BBServer.MODID, name = BBServer.NAME, version = BBServer.VERSION, acceptableRemoteVersions = "*")
+
 public class BBServer {
     public static final String MODID = "bbserver";
     public static final String NAME = "BBServer";
