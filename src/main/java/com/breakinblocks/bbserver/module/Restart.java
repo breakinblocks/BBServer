@@ -59,13 +59,7 @@ public class Restart {
 
             if (System.currentTimeMillis() > restartTime) {
                 try {
-                    FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                            ChatUtils.coloredString("Restarting...", TextFormatting.LIGHT_PURPLE),
-                            true
-                    );
-                    FileUtils.touch(new File(Config.Restart.flag));
-                    FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
-                    restarting = true;
+                    restart();
                 } catch (IOException e) {
                     BBServer.log.error("Failed to create the restart flag file.");
                     FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
@@ -75,5 +69,16 @@ public class Restart {
                 }
             }
         }
+    }
+
+    public static void restart() throws IOException {
+        if (restarting) return;
+        restarting = true;
+        FileUtils.touch(new File(Config.Restart.flag));
+        FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
+                ChatUtils.coloredString("Restarting...", TextFormatting.LIGHT_PURPLE),
+                true
+        );
+        FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
     }
 }
