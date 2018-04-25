@@ -5,6 +5,7 @@ import static net.minecraftforge.common.config.Config.Comment;
 @net.minecraftforge.common.config.Config(modid = BBServer.MODID)
 public class Config {
     public static Restart restart;
+
     public static class Restart {
         @Comment("Register restart command? Only for dedicated servers.")
         public static boolean command = true;

@@ -1,6 +1,7 @@
 package com.breakinblocks.bbserver;
 
 import com.breakinblocks.bbserver.command.CommandRestart;
+import com.breakinblocks.bbserver.module.Restart;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -28,7 +29,10 @@ public class BBServer {
     @EventHandler
     public void serverStart(FMLServerStartingEvent event) {
         if (event.getServer().isDedicatedServer()) {
-            if(Config.Restart.command) event.registerServerCommand(new CommandRestart());
+            if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
+        } else {
+            //Disable the restart feature if it is not a dedicated server
+            Restart.restarting = true;
         }
     }
 
