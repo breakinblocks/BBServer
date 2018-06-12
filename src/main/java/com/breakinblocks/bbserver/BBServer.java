@@ -30,9 +30,8 @@ public class BBServer {
     public void serverStart(FMLServerStartingEvent event) {
         if (event.getServer().isDedicatedServer()) {
             if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
-        } else {
-            //Disable the restart feature if it is not a dedicated server
-            Restart.restarting = true;
+            // Restart Module only works on dedicated server.
+            if (Config.Restart.mode >= 0) Restart.createTasks();
         }
     }
 
