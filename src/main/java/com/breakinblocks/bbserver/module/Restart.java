@@ -26,54 +26,55 @@ public class Restart {
         if (event.phase != TickEvent.Phase.END) return;
         if (restarting) return;
         if (Config.Restart.period > 0) {
-            // Initialisation
-            if (restartTime == -1) {
-                restartTime = System.currentTimeMillis() + (long) (Config.Restart.period * 1000 * 60 * 60);
-                long remaining = (restartTime - System.currentTimeMillis()) / 1000;
-                // Select closest notification
-                while (nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
-                    nextRestartMessage++;
-                }
-            }
-
-            // Seconds remaining
+            return;
+        }
+        // Initialisation
+        if (restartTime == -1) {
+            restartTime = System.currentTimeMillis() + (long) (Config.Restart.period * 1000 * 60 * 60);
             long remaining = (restartTime - System.currentTimeMillis()) / 1000;
+            // Select closest notification
+            while (nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
+                nextRestartMessage++;
+            }
+        }
 
-            // Restart Notifications
-            if (remaining > 0 && nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
-                // Select next closest notification
-                while (nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
-                    nextRestartMessage++;
-                }
-                // Seconds for current notification
-                remaining = NOTIFICATIONS[nextRestartMessage - 1];
+        // Seconds remaining
+        long remaining = (restartTime - System.currentTimeMillis()) / 1000;
 
-                String message;
-                if (remaining >= 60 * 60) {
-                    message = (remaining / 60 / 60) + " hr";
-                }else if (remaining >= 60) {
-                    message = (remaining / 60) + " min";
-                } else {
-                    message = remaining + " sec";
-                }
-                message = "Restart in " + message;
+        // Restart Notifications
+        if (remaining > 0 && nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
+            // Select next closest notification
+            while (nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
+                nextRestartMessage++;
+            }
+            // Seconds for current notification
+            remaining = NOTIFICATIONS[nextRestartMessage - 1];
+
+            String message;
+            if (remaining >= 60 * 60) {
+                message = (remaining / 60 / 60) + " hr";
+            }else if (remaining >= 60) {
+                message = (remaining / 60) + " min";
+            } else {
+                message = remaining + " sec";
+            }
+            message = "Restart in " + message;
+            FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
+                    ChatUtil.coloredString(message, TextFormatting.LIGHT_PURPLE),
+                    true
+            );
+        }
+
+        // Restart
+        if (System.currentTimeMillis() > restartTime) {
+            try {
+                restart();
+            } catch (IOException e) {
+                BBServer.log.error("Failed to create the restart flag file.");
                 FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                        ChatUtil.coloredString(message, TextFormatting.LIGHT_PURPLE),
+                        ChatUtil.coloredString("Server failed to restart.", TextFormatting.DARK_RED),
                         true
                 );
-            }
-
-            // Restart
-            if (System.currentTimeMillis() > restartTime) {
-                try {
-                    restart();
-                } catch (IOException e) {
-                    BBServer.log.error("Failed to create the restart flag file.");
-                    FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                            ChatUtil.coloredString("Server failed to restart.", TextFormatting.DARK_RED),
-                            true
-                    );
-                }
             }
         }
     }
