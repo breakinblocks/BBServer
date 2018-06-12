@@ -87,7 +87,9 @@ public class Restart {
         if (restarting) return;
         restarting = true;
         FileUtils.touch(new File(Config.Restart.flag));
-        ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE, true);
-        FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
+        MiscUtil.sync(() -> {
+            ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE, true);
+            FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
+        });
     }
 }
