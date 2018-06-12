@@ -9,9 +9,14 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.time.DateUtils;
+import org.apache.commons.lang3.time.DurationFormatUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 @Mod.EventBusSubscriber(modid = BBServer.MODID)
 public class Restart {
@@ -25,13 +30,46 @@ public class Restart {
     public static void serverTick(TickEvent.ServerTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
         if (restarting) return;
-        if (Config.Restart.period > 0) {
+        if (Config.Restart.mode < 0 || Config.Restart.mode > 1) {
+            restarting = true;
             return;
         }
+
+        // Use a consistent "now" throughout this method
+        long now = System.currentTimeMillis();
+
         // Initialisation
-        if (restartTime == -1) {
-            restartTime = System.currentTimeMillis() + (long) (Config.Restart.period * 1000 * 60 * 60);
-            long remaining = (restartTime - System.currentTimeMillis()) / 1000;
+        if (restartTime < 0) {
+            switch (Config.Restart.mode) {
+                case 0: {
+                    restartTime = now + (long) (Config.Restart.delay * DateUtils.MILLIS_PER_HOUR);
+                }
+                break;
+                case 1: {
+                    // Start of the day for the system timezone
+                    long startOfDay = Instant.ofEpochMilli(now).atZone(ZoneId.systemDefault()).truncatedTo(ChronoUnit.DAYS).toInstant().toEpochMilli();
+                    // If no times are specified, will restart in 24 hours
+                    restartTime = now + DateUtils.MILLIS_PER_DAY;
+                    // Get the closest next restart time
+                    for (double restartHour : Config.Restart.times) {
+                        long restartMs = startOfDay + (long) (restartHour * DateUtils.MILLIS_PER_HOUR);
+                        // If the restart time has already passed, add 24 hours to get the next restart time
+                        if (restartMs <= now) {
+                            restartMs += DateUtils.MILLIS_PER_DAY;
+                        }
+                        restartTime = Math.min(restartTime, restartMs);
+                    }
+                }
+                break;
+            }
+
+            String message = "Server restarts in " + DurationFormatUtils.formatDurationWords(restartTime - now, true, true);
+            FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
+                    ChatUtil.coloredString(message, TextFormatting.LIGHT_PURPLE),
+                    true
+            );
+
+            long remaining = (restartTime - now) / 1000;
             // Select closest notification
             while (nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
                 nextRestartMessage++;
@@ -39,7 +77,7 @@ public class Restart {
         }
 
         // Seconds remaining
-        long remaining = (restartTime - System.currentTimeMillis()) / 1000;
+        long remaining = (restartTime - now) / 1000;
 
         // Restart Notifications
         if (remaining > 0 && nextRestartMessage < NOTIFICATIONS.length && remaining <= NOTIFICATIONS[nextRestartMessage]) {
@@ -50,15 +88,7 @@ public class Restart {
             // Seconds for current notification
             remaining = NOTIFICATIONS[nextRestartMessage - 1];
 
-            String message;
-            if (remaining >= 60 * 60) {
-                message = (remaining / 60 / 60) + " hr";
-            }else if (remaining >= 60) {
-                message = (remaining / 60) + " min";
-            } else {
-                message = remaining + " sec";
-            }
-            message = "Restart in " + message;
+            String message = "Server restarts in " + DurationFormatUtils.formatDurationWords(remaining * 1000, true, true);
             FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
                     ChatUtil.coloredString(message, TextFormatting.LIGHT_PURPLE),
                     true
@@ -66,7 +96,7 @@ public class Restart {
         }
 
         // Restart
-        if (System.currentTimeMillis() > restartTime) {
+        if (now > restartTime) {
             try {
                 restart();
             } catch (IOException e) {
