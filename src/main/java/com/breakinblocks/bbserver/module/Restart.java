@@ -2,7 +2,7 @@ package com.breakinblocks.bbserver.module;
 
 import com.breakinblocks.bbserver.BBServer;
 import com.breakinblocks.bbserver.Config;
-import com.breakinblocks.bbserver.util.ChatUtils;
+import com.breakinblocks.bbserver.util.ChatUtil;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -58,7 +58,7 @@ public class Restart {
                 }
                 message = "Restart in " + message;
                 FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                        ChatUtils.coloredString(message, TextFormatting.LIGHT_PURPLE),
+                        ChatUtil.coloredString(message, TextFormatting.LIGHT_PURPLE),
                         true
                 );
             }
@@ -70,7 +70,7 @@ public class Restart {
                 } catch (IOException e) {
                     BBServer.log.error("Failed to create the restart flag file.");
                     FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                            ChatUtils.coloredString("Server failed to restart.", TextFormatting.DARK_RED),
+                            ChatUtil.coloredString("Server failed to restart.", TextFormatting.DARK_RED),
                             true
                     );
                 }
@@ -83,7 +83,7 @@ public class Restart {
         restarting = true;
         FileUtils.touch(new File(Config.Restart.flag));
         FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                ChatUtils.coloredString("Restarting...", TextFormatting.LIGHT_PURPLE),
+                ChatUtil.coloredString("Restarting...", TextFormatting.LIGHT_PURPLE),
                 true
         );
         FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();

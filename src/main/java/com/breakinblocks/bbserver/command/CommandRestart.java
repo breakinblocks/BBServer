@@ -1,7 +1,7 @@
 package com.breakinblocks.bbserver.command;
 
 import com.breakinblocks.bbserver.module.Restart;
-import com.breakinblocks.bbserver.util.ChatUtils;
+import com.breakinblocks.bbserver.util.ChatUtil;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -24,13 +24,13 @@ public class CommandRestart extends CommandBase {
     @Override
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
         if (Restart.restarting) {
-            sender.sendMessage(ChatUtils.coloredString("Server is already restarting!", TextFormatting.DARK_RED));
+            sender.sendMessage(ChatUtil.coloredString("Server is already restarting!", TextFormatting.DARK_RED));
             return;
         }
         try {
             Restart.restart();
         } catch (IOException e) {
-            sender.sendMessage(ChatUtils.coloredString("Failed to create the restart flag file.", TextFormatting.DARK_RED));
+            sender.sendMessage(ChatUtil.coloredString("Failed to create the restart flag file.", TextFormatting.DARK_RED));
         }
     }
 }
