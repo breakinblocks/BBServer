@@ -20,7 +20,7 @@ import java.util.Timer;
 
 public class Restart {
     public static boolean restarting = false;
-    static Timer timer = new Timer();
+    private static final Timer timer = new Timer("BBServer-Restart", true);
 
     public static void createTasks() {
         // Use a consistent "now" throughout this method
