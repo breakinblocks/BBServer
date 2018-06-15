@@ -5,20 +5,21 @@ import static net.minecraftforge.common.config.Config.RangeDouble;
 
 @net.minecraftforge.common.config.Config(modid = BBServer.MODID)
 public class Config {
+    @Comment("Restart module only works on a dedicated server.\nThe 'flag' file is written and then the server is shutdown.\nThe server run script is then responsible for detecting and deleting the 'flag' file and re-running the server instead of exiting.")
     public static Restart restart;
 
     public static class Restart {
-        @Comment("Register restart command? Only for dedicated servers.")
+        @Comment("Register restart command")
         public static boolean command = true;
 
         @Comment("-1: disabled, 0: restart after 'delay', 1: restart at 'times' of the day.")
         public static int mode = -1;
 
-        @Comment("Auto-restart period in hours.")
+        @Comment("Mode 0: Auto-restart period in hours.")
         @RangeDouble(min = 0, max = 24)
         public static double delay = 6;
 
-        @Comment("Auto-restart hours in a day (system time zone).")
+        @Comment("Mode 1: Auto-restart hours in a day (system time zone).")
         @RangeDouble(min = 0, max = 24)
         public static double[] times = new double[]{3, 9, 15, 21};
 
@@ -26,7 +27,7 @@ public class Config {
         @Comment("Notification times in seconds")
         public static int[] notifications = new int[]{2 * 60 * 60, 60 * 60, 30 * 60, 10 * 60, 5 * 60, 60, 30, 10, 5, 4, 3, 2, 1};
 
-        @Comment("Restart flag file. File is written then the server is shutdown. Server run script is responsible for deleting the file and re-running the server instead of exiting.")
+        @Comment("Restart flag file")
         public static String flag = "autostart.stamp";
     }
 }
