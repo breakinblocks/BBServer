@@ -2,6 +2,7 @@ package com.breakinblocks.bbserver;
 
 import com.breakinblocks.bbserver.command.CommandRestart;
 import com.breakinblocks.bbserver.module.Restart;
+import com.breakinblocks.bbserver.module.Watcher;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -33,6 +34,8 @@ public class BBServer {
             if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
             if (Config.Restart.mode >= 0) Restart.createTasks();
         }
+
+        Watcher.setup();
     }
 
     @EventHandler
