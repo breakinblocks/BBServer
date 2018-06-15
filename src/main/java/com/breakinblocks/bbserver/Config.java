@@ -8,6 +8,9 @@ public class Config {
     @Comment("Restart module only works on a dedicated server.\nThe 'flag' file is written and then the server is shutdown.\nThe server run script is then responsible for detecting and deleting the 'flag' file and re-running the server instead of exiting.")
     public static Restart restart;
 
+    @Comment("Watches for changes in files.")
+    public static Watcher watcher;
+
     public static class Restart {
         @Comment("Register restart command")
         public static boolean command = true;
@@ -29,5 +32,13 @@ public class Config {
 
         @Comment("Restart flag file")
         public static String flag = "autostart.stamp";
+    }
+
+    public static class Watcher {
+        @Comment("Reload whitelist.json on change")
+        public static boolean whitelist = true;
+
+        @Comment("Reload ops.json on change")
+        public static boolean ops = true;
     }
 }

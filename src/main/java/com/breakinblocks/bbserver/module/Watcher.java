@@ -1,6 +1,7 @@
 package com.breakinblocks.bbserver.module;
 
 import com.breakinblocks.bbserver.BBServer;
+import com.breakinblocks.bbserver.Config;
 import com.breakinblocks.bbserver.util.MiscUtil;
 import net.minecraft.server.management.PlayerList;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -94,7 +95,7 @@ public class Watcher implements Runnable {
         if(!FMLCommonHandler.instance().getMinecraftServerInstance().isDedicatedServer()) return;
 
         // Ops reloading
-        Watcher.instance.watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
+        if(Config.Watcher.ops) Watcher.instance.watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
             try {
                 FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getOppedPlayers().readSavedFile();
                 BBServer.log.info("Ops reloaded");
@@ -104,7 +105,7 @@ public class Watcher implements Runnable {
         }));
 
         // Whitelist reloading
-        Watcher.instance.watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
+        if(Config.Watcher.whitelist) Watcher.instance.watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
             try {
                 FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getWhitelistedPlayers().readSavedFile();
                 BBServer.log.info("Whitelist reloaded");
