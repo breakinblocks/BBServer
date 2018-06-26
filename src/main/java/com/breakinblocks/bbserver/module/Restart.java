@@ -59,7 +59,7 @@ public class Restart {
 
         ChatUtil.broadcastMessage(
                 "Server restarts in " + DurationFormatUtils.formatDurationWords(Duration.between(now, restartTime).toMillis(), true, true),
-                TextFormatting.LIGHT_PURPLE, true);
+                TextFormatting.LIGHT_PURPLE);
 
         // Notifications
         for (long secondsPrior : Config.Restart.notifications) {
@@ -68,7 +68,7 @@ public class Restart {
             timer.schedule(MiscUtil.task(() -> {
                 ChatUtil.broadcastMessage(
                         "Server restarts in " + DurationFormatUtils.formatDurationWords(Duration.between(notificationTime, restartTime).toMillis(), true, true),
-                        TextFormatting.LIGHT_PURPLE, true);
+                        TextFormatting.LIGHT_PURPLE);
             }), Date.from(notificationTime));
         }
 
@@ -78,7 +78,7 @@ public class Restart {
                 restart();
             } catch (IOException e) {
                 BBServer.log.error("Failed to create the restart flag file.");
-                ChatUtil.broadcastMessage("Server failed to restart.", TextFormatting.DARK_RED, true);
+                ChatUtil.broadcastMessage("Server failed to restart.", TextFormatting.DARK_RED);
             }
         }), Date.from(restartTime));
     }
@@ -88,7 +88,7 @@ public class Restart {
         restarting = true;
         FileUtils.touch(new File(Config.Restart.flag));
         MiscUtil.sync(() -> {
-            ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE, true);
+            ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE);
             FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
         });
     }

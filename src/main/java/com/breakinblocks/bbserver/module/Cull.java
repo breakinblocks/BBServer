@@ -40,8 +40,6 @@ public class Cull {
         if(rl == null) return;
         if(!entities.contains(rl)) return;
         event.setResult(Event.Result.DENY);
-
-        BBServer.log.info("Denied " + event.getEntity().getName(), true);
     }
 
     /**
@@ -57,13 +55,20 @@ public class Cull {
         if(!entities.contains(rl)) return;
         event.setCanceled(true);
 
-        BBServer.log.info("Culled " + event.getEntity().getName(), true);
+        EntityPlayer player = event.getWorld().getClosestPlayer(entity.posX, entity.posY, entity.posZ, -1, Predicates.alwaysTrue());
 
-        if(Config.Cull.notify) {
-            EntityPlayer player = event.getWorld().getClosestPlayer(entity.posX, entity.posY, entity.posZ, -1, Predicates.alwaysTrue());
-            if (player != null) {
-                player.sendMessage(new TextComponentString("Culled " + entity.getName() + " (" + (int) (player.getDistance(entity)) + " m away)"));
+        int distance = (int)(player != null ? player.getDistance(entity) : -1);
+
+        if(Config.Cull.log) {
+            String msg = "Culled " + event.getEntity().getName();
+            if(player != null) {
+                msg = msg + String.format(" (%d m away from %s)", distance, player.getName());
             }
+            BBServer.log.info(msg, true);
+        }
+
+        if(Config.Cull.notify && player != null) {
+            player.sendMessage(new TextComponentString(String.format("Culled %s (%d m away)", entity.getName(), distance)));
         }
     }
 

@@ -12,7 +12,7 @@ public class Config {
     @Comment("Watches for changes in files.")
     public static Watcher watcher;
 
-    @Comment("Removes entities from the world.\nListens in on two events:\nLivingSpawnEvent.CheckSpawn: Prevent mob spawning of the entity.\nEntityJoinWorld: Prevent existing or summoned mobs.")
+    @Comment("Removes entities from the world.\nListens in on two events:\nLivingSpawnEvent.CheckSpawn: Prevent mob spawning of the entity.\nEntityJoinWorld: Prevent existing or summoned mobs (culled).")
     public static Cull cull;
 
     public static class Restart {
@@ -51,10 +51,13 @@ public class Config {
     }
 
     public static class Cull {
-        @Comment("Entities that should be removed from the world. e.g. minecraft:creeper")
+        @Comment("Entities that should be removed from the world. e.g. minecraft:creeper.")
         public static String[] entities = new String[]{};
 
-        @Comment("Notify closest player when an entity is prevented from joining the world (only when culled, not spawn prevention).")
-        public static boolean notify = true;
+        @Comment("Notify closest player when an entity is prevented from joining the world (only when culled).")
+        public static boolean notify = false;
+
+        @Comment("Log when an entity is prevented from joining the world (only when culled).")
+        public static boolean log = true;
     }
 }

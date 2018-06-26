@@ -1,5 +1,6 @@
 package com.breakinblocks.bbserver.util;
 
+import net.minecraft.command.ICommandSender;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraftforge.fml.common.FMLCommonHandler;
@@ -11,17 +12,23 @@ public class ChatUtil {
         return text;
     }
 
-    public static void broadcastMessage(String message, TextFormatting color, boolean isSystem) {
+    public static void broadcastMessage(String message, TextFormatting color) {
         FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                ChatUtil.coloredString(message, color),
-                isSystem
+                coloredString(message, color)
         );
     }
 
-    public static void broadcastMessage(String message, boolean isSystem) {
+    public static void broadcastMessage(String message) {
         FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                new TextComponentString(message),
-                isSystem
+                new TextComponentString(message)
         );
+    }
+
+    public static void sendMessage(ICommandSender target, String message, TextFormatting color) {
+        target.sendMessage(coloredString(message, color));
+    }
+
+    public static void sendMessage(ICommandSender target, String message) {
+        target.sendMessage(new TextComponentString(message));
     }
 }
