@@ -1,6 +1,7 @@
 package com.breakinblocks.bbserver;
 
 import com.breakinblocks.bbserver.command.CommandRestart;
+import com.breakinblocks.bbserver.module.Cull;
 import com.breakinblocks.bbserver.module.Restart;
 import com.breakinblocks.bbserver.module.Watcher;
 import net.minecraftforge.fml.common.Mod;
@@ -14,7 +15,11 @@ import org.apache.logging.log4j.Logger;
 /**
  * Main class.
  */
-@Mod(modid = BBServer.MODID, name = BBServer.NAME, version = BBServer.VERSION, acceptableRemoteVersions = "*")
+@Mod(
+        modid = BBServer.MODID,
+        name = BBServer.NAME,
+        version = BBServer.VERSION,
+        acceptableRemoteVersions = "*")
 public class BBServer {
     public static final String MODID = "bbserver";
     public static final String NAME = "BBServer";
@@ -34,12 +39,11 @@ public class BBServer {
             if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
             if (Config.Restart.mode >= 0) Restart.createTasks();
         }
-
-        Watcher.setup();
+        Watcher.instance.setup();
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-
+        Cull.instance.init(event);
     }
 }

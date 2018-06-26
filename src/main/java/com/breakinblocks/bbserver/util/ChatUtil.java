@@ -13,7 +13,14 @@ public class ChatUtil {
 
     public static void broadcastMessage(String message, TextFormatting color, boolean isSystem) {
         FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
-                ChatUtil.coloredString(message, TextFormatting.LIGHT_PURPLE),
+                ChatUtil.coloredString(message, color),
+                isSystem
+        );
+    }
+
+    public static void broadcastMessage(String message, boolean isSystem) {
+        FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().sendMessage(
+                new TextComponentString(message),
                 isSystem
         );
     }

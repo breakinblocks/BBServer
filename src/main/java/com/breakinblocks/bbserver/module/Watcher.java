@@ -7,12 +7,10 @@ import net.minecraft.server.management.PlayerList;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
 import java.nio.file.*;
 import java.util.List;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
@@ -25,13 +23,14 @@ public class Watcher implements Runnable {
 
     final WatchService watchService;
     final ConcurrentHashMap<WatchKey, ConcurrentHashMap<Path, Runnable>> watching = new ConcurrentHashMap<>();
+    final Timer timer = new Timer("BBServer-Watcher", true);
 
     private Watcher() {
         WatchService watchServiceTemp = null;
         try {
             watchServiceTemp = FileSystems.getDefault().newWatchService();
         } catch (IOException e) {
-            BBServer.log.error("Watcher Module failed to create new Watch Service.");
+            BBServer.log.error("Watcher Module failed to create new Watch Service. Files will not be reloaded.");
         }
         this.watchService = watchServiceTemp;
     }
@@ -66,22 +65,18 @@ public class Watcher implements Runnable {
                     Runnable yay = watchedFiles.get(filePath);
                     if(yay == null) continue;
                     File file = filePath.toFile();
-                    // Block until file is written
-                    try {
-                        FileChannel channel = new RandomAccessFile(file, "rw").getChannel();
-                    } catch (FileNotFoundException e) {
-                        // Don't care
-                    }
+                    // Sometimes the file is empty then written to later
                     if(filePath.toFile().length() <= 0) continue;
                     BBServer.log.info(filePath + " has a callback");
+                    if(!FMLCommonHandler.instance().getMinecraftServerInstance().isServerRunning()) continue;
                     yay.run();
                 }
                 key.reset();
             }
         } catch (InterruptedException e) {
-            //Exit if interrupted
+            // Exit if interrupted
         } finally {
-            //Attempt to close watch service
+            // Attempt to close watch service
             try {
                 this.watchService.close();
             } catch (IOException e) {
@@ -90,12 +85,12 @@ public class Watcher implements Runnable {
         }
     }
 
-    public static void setup() {
+    public void setup() {
         // Dedicated server watchers only (User lists can't be read from file for non-dedicated servers)
         if(!FMLCommonHandler.instance().getMinecraftServerInstance().isDedicatedServer()) return;
 
         // Ops reloading
-        if(Config.Watcher.ops) Watcher.instance.watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
+        if(Config.Watcher.ops) this.watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
             try {
                 FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getOppedPlayers().readSavedFile();
                 BBServer.log.info("Ops reloaded");
@@ -105,7 +100,7 @@ public class Watcher implements Runnable {
         }));
 
         // Whitelist reloading
-        if(Config.Watcher.whitelist) Watcher.instance.watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
+        if(Config.Watcher.whitelist) this.watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
             try {
                 FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getWhitelistedPlayers().readSavedFile();
                 BBServer.log.info("Whitelist reloaded");
@@ -114,8 +109,8 @@ public class Watcher implements Runnable {
             }
         }));
 
-        //Start the Watcher thread
-        Thread thread = new Thread(Watcher.instance, "BBServer-Watcher");
+        // Start the Watcher thread
+        Thread thread = new Thread(this.instance, "BBServer-Watcher");
         thread.setDaemon(true);
         thread.start();
     }
