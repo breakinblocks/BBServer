@@ -1,8 +1,6 @@
 package com.breakinblocks.bbserver;
 
-import static net.minecraftforge.common.config.Config.Comment;
-import static net.minecraftforge.common.config.Config.RangeDouble;
-import static net.minecraftforge.common.config.Config.RangeInt;
+import static net.minecraftforge.common.config.Config.*;
 
 @net.minecraftforge.common.config.Config(modid = BBServer.MODID)
 public class Config {

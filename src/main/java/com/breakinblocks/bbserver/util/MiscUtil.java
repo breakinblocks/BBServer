@@ -9,9 +9,9 @@ import java.util.TimerTask;
 
 public class MiscUtil {
     public static TimerTask task(final Runnable r) {
-        return new TimerTask(){
+        return new TimerTask() {
             @Override
-            public void run(){
+            public void run() {
                 r.run();
             }
         };
@@ -26,7 +26,7 @@ public class MiscUtil {
      */
     public static void sync(Runnable r) {
         MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
-        if(!server.isCallingFromMinecraftThread()){
+        if (!server.isCallingFromMinecraftThread()) {
             server.addScheduledTask(() -> sync(r));
             return;
         }

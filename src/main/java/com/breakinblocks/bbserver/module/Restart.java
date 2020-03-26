@@ -19,8 +19,8 @@ import java.util.Date;
 import java.util.Timer;
 
 public class Restart {
-    public static boolean restarting = false;
     private static final Timer timer = new Timer("BBServer-Restart", true);
+    public static boolean restarting = false;
 
     public static void createTasks() {
         // Use a consistent "now" throughout this method

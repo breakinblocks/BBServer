@@ -21,19 +21,21 @@ public class Cull {
 
     /**
      * Prevent spawning of the entity
+     *
      * @param event
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onCheckSpawn(LivingSpawnEvent.CheckSpawn event) {
         ResourceLocation rl = EntityList.getKey(event.getEntity().getClass());
         // Players don't have a resource location, and other things might not as well
-        if(rl != null && entities.contains(rl))
+        if (rl != null && entities.contains(rl))
             event.setResult(Event.Result.DENY);
     }
 
     /**
      * Prevent entity from being added to the world
      * This removes entities that exist from world gen or previously saved chunks
+     *
      * @param event
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
@@ -41,7 +43,7 @@ public class Cull {
         Entity entity = event.getEntity();
         ResourceLocation rl = EntityList.getKey(entity.getClass());
         // Players don't have a resource location, and other things might not as well
-        if(rl != null && entities.contains(rl)) {
+        if (rl != null && entities.contains(rl)) {
             event.setCanceled(true);
             logEntityCull(entity);
         }
@@ -49,14 +51,14 @@ public class Cull {
 
     private static void logEntityCull(Entity entity) {
         EntityPlayer player = entity.world.getClosestPlayer(entity.posX, entity.posY, entity.posZ, -1, p -> true);
-        if(player == null) {
-            if(Config.Cull.log)
+        if (player == null) {
+            if (Config.Cull.log)
                 BBServer.log.info("Culled " + entity.getName(), true);
         } else {
-            int distance = (int)(player.getDistance(entity));
-            if(Config.Cull.log)
+            int distance = (int) (player.getDistance(entity));
+            if (Config.Cull.log)
                 BBServer.log.info(String.format("Culled %s (%d m away from %s)", entity.getName(), distance, player.getName()));
-            if(Config.Cull.notify)
+            if (Config.Cull.notify)
                 player.sendMessage(new TextComponentString(String.format("Culled %s (%d m away)", entity.getName(), distance)));
         }
     }
@@ -65,7 +67,7 @@ public class Cull {
         if (Config.Cull.entities.length <= 0)
             return;
         MinecraftForge.EVENT_BUS.register(Cull.class);
-        for(String entityId : Config.Cull.entities) {
+        for (String entityId : Config.Cull.entities) {
             entities.add(new ResourceLocation(entityId));
         }
     }

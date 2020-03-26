@@ -4,7 +4,6 @@ import com.breakinblocks.bbserver.command.CommandRestart;
 import com.breakinblocks.bbserver.module.Cull;
 import com.breakinblocks.bbserver.module.Restart;
 import com.breakinblocks.bbserver.module.Watcher;
-import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
