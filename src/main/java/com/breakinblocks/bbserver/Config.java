@@ -4,6 +4,9 @@ import static net.minecraftforge.common.config.Config.*;
 
 @net.minecraftforge.common.config.Config(modid = BBServer.MODID)
 public class Config {
+    @Comment("Fixes for various bugs")
+    public static Fixes fixes;
+
     @Comment("Restart module only works on a dedicated server.\nThe 'flag' file is written and then the server is shutdown.\nThe server run script is then responsible for detecting and deleting the 'flag' file and re-running the server instead of exiting.")
     public static Restart restart;
 
@@ -12,6 +15,11 @@ public class Config {
 
     @Comment("Removes entities from the world.\nListens in on two events:\nLivingSpawnEvent.CheckSpawn: Prevent mob spawning of the entity.\nEntityJoinWorld: Prevent existing or summoned mobs (culled).")
     public static Cull cull;
+
+    public static class Fixes {
+        @Comment("Chunkloads all current loaded dimensions and any newly loaded dimensions while a backup is ongoing to prevent dimensions being flushed (when they are unloaded)")
+        public static boolean backupFreeze = false;
+    }
 
     public static class Restart {
         @Comment("Register restart command.")

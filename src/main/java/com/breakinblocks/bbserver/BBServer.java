@@ -1,9 +1,11 @@
 package com.breakinblocks.bbserver;
 
 import com.breakinblocks.bbserver.command.CommandRestart;
+import com.breakinblocks.bbserver.module.BackupFreezeFix;
 import com.breakinblocks.bbserver.module.Cull;
 import com.breakinblocks.bbserver.module.Restart;
 import com.breakinblocks.bbserver.module.Watcher;
+import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -25,6 +27,10 @@ public class BBServer {
     public static final String NAME = "BBServer";
     public static final String VERSION = "@VERSION@";
 
+    public static final String FTB_BACKUPS_MODID = "ftbbackups";
+
+    @Mod.Instance
+    public static BBServer instance = null;
     public static Logger log = LogManager.getLogger(MODID);
 
     @EventHandler
@@ -45,6 +51,10 @@ public class BBServer {
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
+        BBServerChunkManager.init();
         Cull.init();
+
+        if (Config.Fixes.backupFreeze && Loader.isModLoaded(FTB_BACKUPS_MODID))
+            BackupFreezeFix.init();
     }
 }
