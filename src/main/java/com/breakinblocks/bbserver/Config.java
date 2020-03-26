@@ -9,7 +9,7 @@ public class Config {
     @Comment("Restart module only works on a dedicated server.\nThe 'flag' file is written and then the server is shutdown.\nThe server run script is then responsible for detecting and deleting the 'flag' file and re-running the server instead of exiting.")
     public static Restart restart;
 
-    @Comment("Watches for changes in files.")
+    @Comment("Watches for changes in files and reloads them.")
     public static Watcher watcher;
 
     @Comment("Removes entities from the world.\nListens in on two events:\nLivingSpawnEvent.CheckSpawn: Prevent mob spawning of the entity.\nEntityJoinWorld: Prevent existing or summoned mobs (culled).")
@@ -17,7 +17,7 @@ public class Config {
 
     public static class Restart {
         @Comment("Register restart command.")
-        public static boolean command = true;
+        public static boolean command = false;
 
         @Comment("-1: disabled, 0: restart after 'delay', 1: restart at 'times' of the day.")
         public static int mode = -1;
@@ -47,11 +47,11 @@ public class Config {
 
         @Comment("Seconds to wait before reloading.")
         @RangeInt(min = 1)
-        public static int delay = 5; // TODO: Implement
+        public static int delay = 5;
     }
 
     public static class Cull {
-        @Comment("Entities that should be removed from the world. e.g. minecraft:creeper.")
+        @Comment("Entities that should be removed from the world. e.g. 'minecraft:creeper'.")
         public static String[] entities = new String[]{};
 
         @Comment("Notify closest player when an entity is prevented from joining the world (only when culled).")

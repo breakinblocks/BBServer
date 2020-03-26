@@ -27,9 +27,7 @@ public class MiscUtil {
     public static void sync(Runnable r) {
         MinecraftServer server = FMLCommonHandler.instance().getMinecraftServerInstance();
         if(!server.isCallingFromMinecraftThread()){
-            server.addScheduledTask(()->{
-                sync(r);
-            });
+            server.addScheduledTask(() -> sync(r));
             return;
         }
         r.run();

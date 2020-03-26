@@ -4,6 +4,7 @@ import com.breakinblocks.bbserver.command.CommandRestart;
 import com.breakinblocks.bbserver.module.Cull;
 import com.breakinblocks.bbserver.module.Restart;
 import com.breakinblocks.bbserver.module.Watcher;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -35,15 +36,16 @@ public class BBServer {
     @EventHandler
     public void serverStart(FMLServerStartingEvent event) {
         if (event.getServer().isDedicatedServer()) {
-            // Restart Module only works on dedicated server.
+            // Restart Module
             if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
             if (Config.Restart.mode >= 0) Restart.createTasks();
+            // Watcher Module
+            Watcher.setup();
         }
-        Watcher.instance.setup();
     }
 
     @EventHandler
     public void init(FMLInitializationEvent event) {
-        Cull.instance.init(event);
+        Cull.init();
     }
 }
