@@ -19,6 +19,9 @@ public class Config {
     public static class Fixes {
         @Comment("Chunkloads all current loaded dimensions and any newly loaded dimensions while a backup is ongoing to prevent dimensions being flushed (when they are unloaded)")
         public static boolean backupFreeze = false;
+
+        @Comment("Disable the world border in these dimensions (does not work for overworld!)")
+        public static int[] noWorldBorderDimIds = new int[]{};
     }
 
     public static class Restart {

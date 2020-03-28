@@ -1,10 +1,7 @@
 package com.breakinblocks.bbserver;
 
 import com.breakinblocks.bbserver.command.CommandRestart;
-import com.breakinblocks.bbserver.module.BackupFreezeFix;
-import com.breakinblocks.bbserver.module.Cull;
-import com.breakinblocks.bbserver.module.Restart;
-import com.breakinblocks.bbserver.module.Watcher;
+import com.breakinblocks.bbserver.module.*;
 import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.Mod.EventHandler;
@@ -56,5 +53,8 @@ public class BBServer {
 
         if (Config.Fixes.backupFreeze && Loader.isModLoaded(FTB_BACKUPS_MODID))
             BackupFreezeFix.init();
+
+        if (Config.Fixes.noWorldBorderDimIds.length > 0)
+            WorldBorderDisable.init();
     }
 }
