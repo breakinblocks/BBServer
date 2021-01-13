@@ -1,69 +1,107 @@
 buildscript {
     repositories {
+        maven {
+            url 'https://files.minecraftforge.net/maven'
+            content {
+                includeGroup 'net.minecraftforge'
+                includeGroup 'net.minecraftforge.gradle'
+            }
+        }
         jcenter()
-        maven { url = "http://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
     }
 }
-apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "${mc_version}-${mod_version}"
+apply plugin: 'net.minecraftforge.gradle'
+apply plugin: 'java'
+apply plugin: 'idea'
+
+version = "${mod_version}"
 group = "com.breakinblocks.bbserver"
-archivesBaseName = "bbserver"
+archivesBaseName = "bbserver-${mc_version}"
 
-sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
+sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = JavaVersion.VERSION_1_8
 
 minecraft {
-    version = "${mc_version}-${forge_version}"
-    runDir = "run"
+    mappings channel: "${mappings_channel}", version: "${mappings_version}"
+    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
 
-    replace "@VERSION@", project.version
-    replaceIn "BBServer.java"
+    runs {
+        client {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
 
-    mappings = "${mcp_mappings}"
+            mods {
+                bbserver {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        server {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                bbserver {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
 }
 
 repositories {
     // JEI
-    maven { url "http://dvs1.progwml6.com/files/maven" }
+    maven {
+        url 'https://dvs1.progwml6.com/files/maven'
+        content {
+            includeGroup 'mezz.jei'
+        }
+    }
 
     // FTB Backups
-    maven { url "https://minecraft.curseforge.com/api/maven"}
+    maven {
+        url 'https://www.cursemaven.com'
+        content {
+            includeGroup 'curse.maven'
+        }
+    }
 }
 
 dependencies {
-    deobfCompile "mezz.jei:jei_${mc_version}:${jei_version}"
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
 
     // Curse Maven Mods
-    deobfCompile "ftb-backups:FTBBackups:${ftb_backups_version}"
+    implementation "curse.maven:ftb-backups-314904:${ftb_backups_fileid}"
 }
 
 processResources {
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
+    inputs.property 'mod_version', project.mod_version
+    inputs.property 'mc_version', project.mc_version
+    inputs.property 'forge_version_major', project.forge_version_major
 
-    // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+        include 'META-INF/mods.toml'
 
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand(
+                'mod_version': "${mod_version}",
+                'mc_version': "${mc_version}",
+                'forge_version_major': "${forge_version_major}",
+        )
     }
 
-    // copy everything else except the mcmod.info
+    // copy everything else except the mods.toml
     from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+        exclude 'META-INF/mods.toml'
     }
 }
 
-jar {
-    manifest {
-        attributes 'FMLAT': 'bbserver_at.cfg'
-    }
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
