@@ -1,60 +1,61 @@
 package com.breakinblocks.bbserver;
 
 import com.breakinblocks.bbserver.command.CommandRestart;
-import com.breakinblocks.bbserver.module.*;
-import net.minecraftforge.fml.common.Loader;
+import com.breakinblocks.bbserver.module.BackupFreezeFix;
+import com.breakinblocks.bbserver.module.Cull;
+import com.breakinblocks.bbserver.module.Restart;
+import com.breakinblocks.bbserver.module.Watcher;
+import com.breakinblocks.bbserver.module.WorldBorderDisable;
+import net.minecraftforge.fml.ExtensionPoint;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.common.Mod.EventHandler;
-import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
+import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.fml.network.FMLNetworkConstants;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 /**
  * Main class.
  */
-@Mod(
-        modid = BBServer.MODID,
-        name = BBServer.NAME,
-        version = BBServer.VERSION,
-        acceptableRemoteVersions = "*")
+@Mod(BBServer.MODID)
 public class BBServer {
     public static final String MODID = "bbserver";
-    public static final String NAME = "BBServer";
-    public static final String VERSION = "@VERSION@";
 
     public static final String FTB_BACKUPS_MODID = "ftbbackups";
 
-    @Mod.Instance
-    public static BBServer instance = null;
-    public static Logger log = LogManager.getLogger(MODID);
+    private static final Logger LOGGER = LogManager.getLogger();
 
-    @EventHandler
-    public void preInit(FMLPreInitializationEvent event) {
-        log = event.getModLog();
+    public BBServer() {
+        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BBServerConfig.commonSpec);
+        // Ignore this mod being installed on either side
+        ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (incoming, isNetwork) -> true));
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::serverStart);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
     }
 
-    @EventHandler
     public void serverStart(FMLServerStartingEvent event) {
         if (event.getServer().isDedicatedServer()) {
             // Restart Module
-            if (Config.Restart.command) event.registerServerCommand(new CommandRestart());
-            if (Config.Restart.mode >= 0) Restart.createTasks();
+            if (BBServerConfig.COMMON.restart.command.get())
+                new CommandRestart().register(event.getServer().getCommandManager().getDispatcher());
+            if (BBServerConfig.COMMON.restart.mode.get() >= 0) Restart.createTasks();
             // Watcher Module
             Watcher.setup();
         }
     }
 
-    @EventHandler
-    public void init(FMLInitializationEvent event) {
-        BBServerChunkManager.init();
+    public void init(FMLCommonSetupEvent event) {
         Cull.init();
 
-        if (Config.Fixes.backupFreeze && Loader.isModLoaded(FTB_BACKUPS_MODID))
+        if (BBServerConfig.COMMON.fixes.backupFreeze.get() && ModList.get().isLoaded(FTB_BACKUPS_MODID))
             BackupFreezeFix.init();
 
-        if (Config.Fixes.noWorldBorderDimIds.length > 0)
+        if (!BBServerConfig.COMMON.fixes.noWorldBorderDimIds.get().isEmpty())
             WorldBorderDisable.init();
     }
 }

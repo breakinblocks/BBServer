@@ -1,32 +1,32 @@
 package com.breakinblocks.bbserver.module;
 
-import com.breakinblocks.bbserver.BBServer;
-import com.breakinblocks.bbserver.Config;
+import com.breakinblocks.bbserver.BBServerConfig;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityList;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.Util;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
-import net.minecraftforge.fml.common.eventhandler.Event;
-import net.minecraftforge.fml.common.eventhandler.EventPriority;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.eventbus.api.Event;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.util.HashSet;
 
 public class Cull {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final HashSet<ResourceLocation> entities = new HashSet<>();
 
     /**
      * Prevent spawning of the entity
-     *
-     * @param event
      */
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onCheckSpawn(LivingSpawnEvent.CheckSpawn event) {
-        ResourceLocation rl = EntityList.getKey(event.getEntity().getClass());
+        ResourceLocation rl = event.getEntity().getType().getRegistryName();
         // Players don't have a resource location, and other things might not as well
         if (rl != null && entities.contains(rl))
             event.setResult(Event.Result.DENY);
@@ -35,13 +35,11 @@ public class Cull {
     /**
      * Prevent entity from being added to the world
      * This removes entities that exist from world gen or previously saved chunks
-     *
-     * @param event
      */
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onEntityJoinWorld(EntityJoinWorldEvent event) {
         Entity entity = event.getEntity();
-        ResourceLocation rl = EntityList.getKey(entity.getClass());
+        ResourceLocation rl = entity.getType().getRegistryName();
         // Players don't have a resource location, and other things might not as well
         if (rl != null && entities.contains(rl)) {
             event.setCanceled(true);
@@ -50,24 +48,24 @@ public class Cull {
     }
 
     private static void logEntityCull(Entity entity) {
-        EntityPlayer player = entity.world.getClosestPlayer(entity.posX, entity.posY, entity.posZ, -1, p -> true);
+        PlayerEntity player = entity.world.getClosestPlayer(entity.getPosX(), entity.getPosY(), entity.getPosZ(), -1, p -> true);
         if (player == null) {
-            if (Config.Cull.log)
-                BBServer.log.info("Culled " + entity.getName(), true);
+            if (BBServerConfig.COMMON.cull.log.get())
+                LOGGER.info("Culled " + entity.getName());
         } else {
             int distance = (int) (player.getDistance(entity));
-            if (Config.Cull.log)
-                BBServer.log.info(String.format("Culled %s (%d m away from %s)", entity.getName(), distance, player.getName()));
-            if (Config.Cull.notify)
-                player.sendMessage(new TextComponentString(String.format("Culled %s (%d m away)", entity.getName(), distance)));
+            if (BBServerConfig.COMMON.cull.log.get())
+                LOGGER.info(String.format("Culled %s (%d m away from %s)", entity.getName(), distance, player.getName()));
+            if (BBServerConfig.COMMON.cull.notify.get())
+                player.sendMessage(new StringTextComponent(String.format("Culled %s (%d m away)", entity.getName(), distance)), Util.DUMMY_UUID);
         }
     }
 
     public static void init() {
-        if (Config.Cull.entities.length <= 0)
+        if (BBServerConfig.COMMON.cull.entities.get().isEmpty())
             return;
         MinecraftForge.EVENT_BUS.register(Cull.class);
-        for (String entityId : Config.Cull.entities) {
+        for (String entityId : BBServerConfig.COMMON.cull.entities.get()) {
             entities.add(new ResourceLocation(entityId));
         }
     }

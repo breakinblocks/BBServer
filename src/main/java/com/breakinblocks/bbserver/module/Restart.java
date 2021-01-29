@@ -1,13 +1,13 @@
 package com.breakinblocks.bbserver.module;
 
-import com.breakinblocks.bbserver.BBServer;
-import com.breakinblocks.bbserver.Config;
+import com.breakinblocks.bbserver.BBServerConfig;
 import com.breakinblocks.bbserver.util.ChatUtil;
 import com.breakinblocks.bbserver.util.MiscUtil;
 import net.minecraft.util.text.TextFormatting;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,6 +19,7 @@ import java.util.Date;
 import java.util.Timer;
 
 public class Restart {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final Timer timer = new Timer("BBServer-Restart", true);
     public static boolean restarting = false;
 
@@ -28,9 +29,9 @@ public class Restart {
         final Instant restartTime;
 
         // Initialisation
-        switch (Config.Restart.mode) {
+        switch (BBServerConfig.COMMON.restart.mode.get()) {
             case 0: {
-                restartTime = now.plus(MiscUtil.duration(Config.Restart.delay, ChronoUnit.HOURS));
+                restartTime = now.plus(MiscUtil.duration(BBServerConfig.COMMON.restart.delay.get(), ChronoUnit.HOURS));
             }
             break;
             case 1: {
@@ -39,7 +40,7 @@ public class Restart {
                 // If no times are specified, will restart in 24 hours
                 Instant restartHourMin = now.plus(1, ChronoUnit.DAYS);
                 // Get the closest next restart time
-                for (double hour : Config.Restart.times) {
+                for (double hour : BBServerConfig.COMMON.restart.times.get()) {
                     Instant restartHour = startOfDay.plus(MiscUtil.duration(hour, ChronoUnit.HOURS));
                     // If the restart time has already passed, add 24 hours to get the next restart time
                     if (restartHour.compareTo(now) < 0) {
@@ -62,7 +63,7 @@ public class Restart {
                 TextFormatting.LIGHT_PURPLE);
 
         // Notifications
-        for (long secondsPrior : Config.Restart.notifications) {
+        for (long secondsPrior : BBServerConfig.COMMON.restart.notifications.get()) {
             final Instant notificationTime = restartTime.minus(secondsPrior, ChronoUnit.SECONDS);
             if (notificationTime.compareTo(now) <= 0) continue;
             timer.schedule(MiscUtil.task(() -> {
@@ -77,7 +78,7 @@ public class Restart {
             try {
                 restart();
             } catch (IOException e) {
-                BBServer.log.error("Failed to create the restart flag file.");
+                LOGGER.error("Failed to create the restart flag file.");
                 ChatUtil.broadcastMessage("Server failed to restart.", TextFormatting.DARK_RED);
             }
         }), Date.from(restartTime));
@@ -86,10 +87,10 @@ public class Restart {
     public static void restart() throws IOException {
         if (restarting) return;
         restarting = true;
-        FileUtils.touch(new File(Config.Restart.flag));
+        FileUtils.touch(new File(BBServerConfig.COMMON.restart.flag.get()));
         MiscUtil.sync(() -> {
             ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE);
-            FMLCommonHandler.instance().getMinecraftServerInstance().initiateShutdown();
+            MiscUtil.getServer().initiateShutdown(false);
         });
     }
 }

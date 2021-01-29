@@ -1,14 +1,18 @@
 package com.breakinblocks.bbserver.module;
 
-import com.breakinblocks.bbserver.BBServer;
-import com.breakinblocks.bbserver.Config;
+import com.breakinblocks.bbserver.BBServerConfig;
 import com.breakinblocks.bbserver.util.MiscUtil;
 import net.minecraft.server.management.PlayerList;
-import net.minecraftforge.fml.common.FMLCommonHandler;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.*;
+import java.nio.file.FileSystems;
+import java.nio.file.Path;
+import java.nio.file.WatchEvent;
+import java.nio.file.WatchKey;
+import java.nio.file.WatchService;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -20,6 +24,7 @@ import static java.nio.file.StandardWatchEventKinds.ENTRY_MODIFY;
  * Watches for writes on a file and reloads them
  */
 public final class Watcher {
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final WatchService watchService;
     private static final ConcurrentHashMap<WatchKey, ConcurrentHashMap<Path, Runnable>> watching = new ConcurrentHashMap<>();
     private static final Timer timer = new Timer("BBServer-WatcherTimer", true);
@@ -30,7 +35,7 @@ public final class Watcher {
         try {
             watchServiceTemp = FileSystems.getDefault().newWatchService();
         } catch (IOException e) {
-            BBServer.log.error("Watcher Module failed to create new Watch Service. Files will not be reloaded.");
+            LOGGER.error("Watcher Module failed to create new Watch Service. Files will not be reloaded.");
         }
         watchService = watchServiceTemp;
     }
@@ -42,9 +47,9 @@ public final class Watcher {
             watching
                     .computeIfAbsent(key, (k) -> new ConcurrentHashMap<>())
                     .put(path, callback);
-            BBServer.log.info("Watching " + path.getParent() + " for changes to " + file.getName());
+            LOGGER.info("Watching " + path.getParent() + " for changes to " + file.getName());
         } catch (IOException e) {
-            BBServer.log.error("Failed to start watching: " + file.getAbsolutePath(), e);
+            LOGGER.error("Failed to start watching: " + file.getAbsolutePath(), e);
         }
     }
 
@@ -66,7 +71,7 @@ public final class Watcher {
                     // Sometimes the file is empty then written to later
                     if (filePath.toFile().length() <= 0) continue;
                     //BBServer.log.info(filePath + " has a callback");
-                    if (!FMLCommonHandler.instance().getMinecraftServerInstance().isServerRunning()) continue;
+                    if (!MiscUtil.getServer().isServerRunning()) continue;
                     // Schedule or Reschedule
                     TimerTask task = scheduledTasks.compute(yay, (runnable, lastTask) -> {
                         if (lastTask != null)
@@ -78,7 +83,7 @@ public final class Watcher {
                             }
                         };
                     });
-                    timer.schedule(task, Config.Watcher.delay * 1000L);
+                    timer.schedule(task, BBServerConfig.COMMON.watcher.delay.get() * 1000L);
                 }
                 key.reset();
             }
@@ -96,28 +101,28 @@ public final class Watcher {
 
     public static void setup() {
         // Dedicated server watchers only (User lists can't be read from file for non-dedicated servers)
-        if (!FMLCommonHandler.instance().getMinecraftServerInstance().isDedicatedServer()) return;
+        if (!MiscUtil.getServer().isDedicatedServer()) return;
 
         // Ops reloading
-        if (Config.Watcher.ops) watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
+        if (BBServerConfig.COMMON.watcher.ops.get()) watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
             try {
-                PlayerList playerList = FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList();
+                PlayerList playerList = MiscUtil.getServer().getPlayerList();
                 playerList.getOppedPlayers().readSavedFile();
                 // Have to update access levels too
                 playerList.getPlayers().forEach(playerList::updatePermissionLevel);
-                BBServer.log.info("Ops reloaded");
+                LOGGER.info("Ops reloaded");
             } catch (IOException e) {
-                BBServer.log.error("Failed to reload ops", e);
+                LOGGER.error("Failed to reload ops", e);
             }
         }));
 
         // Whitelist reloading
-        if (Config.Watcher.whitelist) watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
+        if (BBServerConfig.COMMON.watcher.whitelist.get()) watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
             try {
-                FMLCommonHandler.instance().getMinecraftServerInstance().getPlayerList().getWhitelistedPlayers().readSavedFile();
-                BBServer.log.info("Whitelist reloaded");
+                MiscUtil.getServer().getPlayerList().getWhitelistedPlayers().readSavedFile();
+                LOGGER.info("Whitelist reloaded");
             } catch (IOException e) {
-                BBServer.log.error("Failed to reload whitelist", e);
+                LOGGER.error("Failed to reload whitelist", e);
             }
         }));
 

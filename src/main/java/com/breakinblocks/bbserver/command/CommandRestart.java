@@ -1,36 +1,32 @@
 package com.breakinblocks.bbserver.command;
 
 import com.breakinblocks.bbserver.module.Restart;
-import com.breakinblocks.bbserver.util.ChatUtil;
-import net.minecraft.command.CommandBase;
-import net.minecraft.command.CommandException;
-import net.minecraft.command.ICommandSender;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.util.text.TextFormatting;
+import com.mojang.brigadier.CommandDispatcher;
+import net.minecraft.command.CommandSource;
+import net.minecraft.command.Commands;
+import net.minecraft.util.text.StringTextComponent;
 
 import java.io.IOException;
 
-public class CommandRestart extends CommandBase {
-    @Override
-    public String getName() {
-        return "restart";
-    }
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
 
-    @Override
-    public String getUsage(ICommandSender sender) {
-        return "";
-    }
+public class CommandRestart {
+    public void register(CommandDispatcher<CommandSource> dispatcher) {
+        dispatcher.register(Commands.literal("restart")
+                .requires(source -> source.hasPermissionLevel(4))
+                .executes(context -> {
+                    if (Restart.restarting) {
+                        context.getSource().sendErrorMessage(new StringTextComponent("Server is already restarting!"));
+                        return 0;
+                    }
 
-    @Override
-    public void execute(MinecraftServer server, ICommandSender sender, String[] args) throws CommandException {
-        if (Restart.restarting) {
-            sender.sendMessage(ChatUtil.coloredString("Server is already restarting!", TextFormatting.DARK_RED));
-            return;
-        }
-        try {
-            Restart.restart();
-        } catch (IOException e) {
-            sender.sendMessage(ChatUtil.coloredString("Failed to create the restart flag file.", TextFormatting.DARK_RED));
-        }
+                    try {
+                        Restart.restart();
+                    } catch (IOException e) {
+                        context.getSource().sendErrorMessage(new StringTextComponent("Failed to create the restart flag file."));
+                        return 0;
+                    }
+                    return SINGLE_SUCCESS;
+                }));
     }
 }
