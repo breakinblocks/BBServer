@@ -75,10 +75,11 @@ repositories {
 
 dependencies {
     minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-    runtimeOnly fg.deobf("mezz.jei:jei-${mc_version}:${jei_version}")
+    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
 
     // Curse Maven Mods
-    implementation fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}")
+    compileOnly fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}")
+    runtimeOnly fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}")
 }
 
 processResources {

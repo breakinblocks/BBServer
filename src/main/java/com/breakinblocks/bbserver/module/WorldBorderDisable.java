@@ -35,6 +35,7 @@ import java.util.List;
  */
 public final class WorldBorderDisable {
 
+    @SuppressWarnings("UnstableApiUsage")
     public static final ImmutableSet<ResourceLocation> DISABLED_DIM_IDS = BBServerConfig.COMMON.fixes.noWorldBorderDimIds.get().stream()
             .map(ResourceLocation::new)
             .collect(ImmutableSet.toImmutableSet());
@@ -44,11 +45,12 @@ public final class WorldBorderDisable {
 
     static {
         // net.minecraft.world.border.WorldBorder field_177758_a #listeners
-        Field field = null;
+        Field field;
         try {
             field = WorldBorder.class.getDeclaredField("listeners");
         } catch (NoSuchFieldException ignored) {
             try {
+                //noinspection JavaReflectionMemberAccess
                 field = WorldBorder.class.getDeclaredField("field_177758_a");
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException("Could not find field 'borderListener' in 'ServerWorld'", e);
