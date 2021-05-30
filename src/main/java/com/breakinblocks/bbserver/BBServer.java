@@ -6,13 +6,14 @@ import com.breakinblocks.bbserver.module.Cull;
 import com.breakinblocks.bbserver.module.Restart;
 import com.breakinblocks.bbserver.module.Watcher;
 import com.breakinblocks.bbserver.module.WorldBorderDisable;
+import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.ExtensionPoint;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.FMLNetworkConstants;
 import org.apache.commons.lang3.tuple.Pair;
@@ -34,11 +35,11 @@ public class BBServer {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, BBServerConfig.commonSpec);
         // Ignore this mod being installed on either side
         ModLoadingContext.get().registerExtensionPoint(ExtensionPoint.DISPLAYTEST, () -> Pair.of(() -> FMLNetworkConstants.IGNORESERVERONLY, (incoming, isNetwork) -> true));
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::serverStart);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::init);
+        MinecraftForge.EVENT_BUS.addListener(this::serverStart);
     }
 
-    public void serverStart(FMLServerStartingEvent event) {
+    public void serverStart(FMLServerStartedEvent event) {
         if (event.getServer().isDedicatedServer()) {
             // Restart Module
             if (BBServerConfig.COMMON.restart.command.get())

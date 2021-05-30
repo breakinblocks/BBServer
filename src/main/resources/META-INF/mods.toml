@@ -1,6 +1,8 @@
 modLoader = "javafml"
-loaderVersion = "[${forge_version_major},)"
+loaderVersion = "${forge_version_range_supported}"
+license = "MIT"
 issueTrackerURL = "https://github.com/breakinblocks/BBServer/issues"
+
 [[mods]]
 modId = "bbserver"
 version = "${mod_version}"
@@ -9,15 +11,17 @@ displayURL = "https://github.com/breakinblocks/BBServer"
 credits = "https://github.com/breakinblocks/BBServer/graphs/contributors"
 authors = "BBServer Contributors"
 description = "Server-side utility mod"
+
 [[dependencies.bbserver]]
 modId = "forge"
 mandatory = true
-versionRange = "[${forge_version_major},)" #mandatory
+versionRange = "${forge_version_range_supported}" #mandatory
 ordering = "NONE"
 side = "BOTH"
+
 [[dependencies.bbserver]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[${mc_version}]"
+versionRange = "${mc_version_range_supported}"
 ordering = "NONE"
 side = "BOTH"

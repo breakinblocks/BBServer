@@ -1,54 +1,52 @@
-buildscript {
-    repositories {
-        maven {
-            url 'https://files.minecraftforge.net/maven'
-            content {
-                includeGroup 'net.minecraftforge'
-                includeGroup 'net.minecraftforge.gradle'
-            }
-        }
-        jcenter()
-    }
-    dependencies {
-        classpath group: 'net.minecraftforge.gradle', name: 'ForgeGradle', version: '3.+', changing: true
-    }
+@file:Suppress("PropertyName")
+
+import net.minecraftforge.gradle.userdev.UserDevExtension
+
+val mod_version: String by project
+val mc_version: String by project
+val mc_version_range_supported: String by project
+val forge_version: String by project
+val forge_version_range_supported: String by project
+val mappings_channel: String by project
+val mappings_version: String by project
+val jei_mc_version: String by project
+val jei_version: String by project
+val ftb_backups_fileid: String by project
+
+plugins {
+    id("net.minecraftforge.gradle")
 }
 
-apply plugin: 'net.minecraftforge.gradle'
-apply plugin: 'java'
-apply plugin: 'idea'
-
-version = "${mod_version}"
 group = "com.breakinblocks.bbserver"
-archivesBaseName = "bbserver-${mc_version}"
+version = mod_version
+base.archivesBaseName = "bbserver-${mc_version}"
 
-sourceCompatibility = targetCompatibility = compileJava.sourceCompatibility = compileJava.targetCompatibility = JavaVersion.VERSION_1_8
+configure<JavaPluginConvention> {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
-minecraft {
-    mappings channel: "${mappings_channel}", version: "${mappings_version}"
-    accessTransformer = file('src/main/resources/META-INF/accesstransformer.cfg')
-
+configure<UserDevExtension> {
+    mappings(mappings_channel, mappings_version)
     runs {
-        client {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
-
+        create("client") {
+            workingDirectory(file("run"))
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+            property("forge.logging.console.level", "debug")
             mods {
-                bbserver {
-                    source sourceSets.main
+                create("bbserver") {
+                    sources = listOf(sourceSets["main"])
                 }
             }
         }
-
-        server {
-            workingDirectory project.file('run')
-            property 'forge.logging.markers', 'SCAN,REGISTRIES,REGISTRYDUMP'
-            property 'forge.logging.console.level', 'debug'
+        create("server") {
+            workingDirectory(file("run"))
+            property("forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP")
+            property("forge.logging.console.level", "debug")
 
             mods {
-                bbserver {
-                    source sourceSets.main
+                create("bbserver") {
+                    sources = listOf(sourceSets["main"])
                 }
             }
         }
@@ -58,53 +56,62 @@ minecraft {
 repositories {
     // JEI
     maven {
-        url 'https://dvs1.progwml6.com/files/maven'
+        url = uri("https://dvs1.progwml6.com/files/maven")
         content {
-            includeGroup 'mezz.jei'
+            includeGroup("mezz.jei")
         }
     }
 
     // FTB Backups
     maven {
-        url 'https://www.cursemaven.com'
+        url = uri("https://www.cursemaven.com")
         content {
-            includeGroup 'curse.maven'
+            includeGroup("curse.maven")
         }
     }
 }
 
 dependencies {
-    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
-    runtimeOnly fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}")
+    add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
+    runtimeOnly(fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}"))
 
     // Curse Maven Mods
-    compileOnly fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}")
-    runtimeOnly fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}")
+    compileOnly(fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}"))
+    runtimeOnly(fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}"))
 }
 
-processResources {
-    inputs.property 'mod_version', project.mod_version
-    inputs.property 'mc_version', project.mc_version
-    inputs.property 'forge_version_major', project.forge_version_major
-
-    from(sourceSets.main.resources.srcDirs) {
-        include 'META-INF/mods.toml'
-
+tasks.named<ProcessResources>("processResources") {
+    inputs.property("mod_version", mod_version)
+    inputs.property("mc_version_range_supported", mc_version_range_supported)
+    inputs.property("forge_version_range_supported", forge_version_range_supported)
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    from(sourceSets["main"].resources.srcDirs) {
+        include("META-INF/mods.toml")
         expand(
-                'mod_version': "${mod_version}",
-                'mc_version': "${mc_version}",
-                'forge_version_major': "${forge_version_major}",
+            "mod_version" to mod_version,
+            "mc_version_range_supported" to mc_version_range_supported,
+            "forge_version_range_supported" to forge_version_range_supported
         )
     }
-
-    // copy everything else except the mods.toml
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'META-INF/mods.toml'
+    from(sourceSets["main"].resources.srcDirs) {
+        exclude("META-INF/mods.toml")
     }
 }
 
-jar.finalizedBy('reobfJar')
+tasks.named<Jar>("jar") {
+    manifest {
+        attributes(
+            "Specification-Title" to "BBServer",
+            "Specification-Vendor" to "Breakin' Blocks",
+            "Specification-Version" to "1",
+            "Implementation-Title" to project.name,
+            "Implementation-Version" to project.version,
+            "Implementation-Vendor" to "Breakin' Blocks"
+        )
+    }
+    finalizedBy("reobfJar")
+}
 
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
+tasks.withType<JavaCompile> {
+    options.encoding = "UTF-8"
 }
