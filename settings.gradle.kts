@@ -1,25 +1,26 @@
 pluginManagement {
-    resolutionStrategy {
-        eachPlugin {
-            when (requested.id.toString()) {
-                "net.minecraftforge.gradle" -> {
-                    useModule("net.minecraftforge.gradle:ForgeGradle:5.0.1")
-                }
-            }
-        }
-    }
     repositories {
         maven {
+            name = "MinecraftForge"
             url = uri("https://maven.minecraftforge.net")
             content {
-                includeGroup("net.minecraft")
-                includeGroup("net.minecraftforge")
-                includeGroup("net.minecraftforge.gradle")
+                includeGroupByRegex("de\\.oceanlabs(?:\\..*)?")
+                includeGroupByRegex("net\\.minecraft(?:\\..*)?")
+                includeGroupByRegex("net\\.minecraftforge(?:\\..*)?")
+            }
+        }
+        maven {
+            name = "ParchmentMC"
+            url = uri("https://maven.parchmentmc.org")
+            content {
+                includeGroupByRegex("org\\.parchmentmc(?:\\..*)?")
             }
         }
         gradlePluginPortal {
             // Gradle plugin portal includes jcenter, migrate away from this if possible
             content {
+                includeGroup("com.github.ben-manes")
+                includeGroup("com.github.ben-manes.versions")
                 includeGroup("com.gradle.publish")
             }
         }

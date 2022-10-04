@@ -47,7 +47,7 @@ public final class BackupFreezeFix {
         MiscUtil.sync(() -> {
             // Chunkload all the currently loaded dimensions
             LOGGER.info("Backup Starting. Loading dimensions...");
-            for (ServerWorld world : LogicalSidedProvider.INSTANCE.<MinecraftServer>get(LogicalSide.SERVER).getWorlds()) {
+            for (ServerWorld world : LogicalSidedProvider.INSTANCE.<MinecraftServer>get(LogicalSide.SERVER).getAllLevels()) {
                 forceLoadWorld(world);
             }
         });
@@ -59,7 +59,7 @@ public final class BackupFreezeFix {
             forcedWorlds.stream()
                     .map(Reference::get)
                     .filter(Objects::nonNull)
-                    .forEach(world -> world.forceChunk(ORIGIN_CHUNK_POS.x, ORIGIN_CHUNK_POS.z, false));
+                    .forEach(world -> world.setChunkForced(ORIGIN_CHUNK_POS.x, ORIGIN_CHUNK_POS.z, false));
             int num = forcedWorlds.size();
             forcedWorlds.clear();
             LOGGER.info("Backup Finished. Released " + num + " worlds");
@@ -67,9 +67,9 @@ public final class BackupFreezeFix {
     }
 
     public static void forceLoadWorld(ServerWorld world) {
-        if (world.getForcedChunks().contains(ORIGIN_CHUNK_POS.asLong())) return;
-        LOGGER.info("Force Loading DIM " + world.getDimensionKey() + ": " + world.getProviderName());
-        world.forceChunk(ORIGIN_CHUNK_POS.x, ORIGIN_CHUNK_POS.z, true);
+        if (world.getForcedChunks().contains(ORIGIN_CHUNK_POS.toLong())) return;
+        LOGGER.info("Force Loading DIM " + world.dimension() + ": " + world.gatherChunkSourceStats());
+        world.setChunkForced(ORIGIN_CHUNK_POS.x, ORIGIN_CHUNK_POS.z, true);
         forcedWorlds.add(new WeakReference<>(world));
     }
 

@@ -65,9 +65,9 @@ public final class WorldBorderDisable {
         IWorld tempWorld = event.getWorld();
         if (!(tempWorld instanceof ServerWorld)) return;
         ServerWorld world = (ServerWorld) tempWorld;
-        ResourceLocation dimensionId = world.getDimensionKey().getLocation();
+        ResourceLocation dimensionId = world.dimension().location();
 
-        if (DISABLED_DIM_IDS.contains(dimensionId) && !DimensionType.OVERWORLD.getLocation().equals(dimensionId)) {
+        if (DISABLED_DIM_IDS.contains(dimensionId) && !DimensionType.OVERWORLD_LOCATION.location().equals(dimensionId)) {
             List<IBorderListener> originalListeners;
             try {
                 WorldBorder worldBorder = world.getWorldBorder();
@@ -76,19 +76,19 @@ public final class WorldBorderDisable {
                 // remove existing listeners
                 originalListeners.clear();
                 // set the world border to default limit
-                world.getWorldBorder().setTransition(WORLD_BORDER_DEFAULT_SIZE);
+                world.getWorldBorder().setSize(WORLD_BORDER_DEFAULT_SIZE);
             } catch (IllegalAccessException e) {
-                LOGGER.warn("Failed to replace borderListener for DIM " + world.getDimensionKey() + ": " + world.getProviderName(), e);
+                LOGGER.warn("Failed to replace borderListener for DIM " + world.dimension() + ": " + world.gatherChunkSourceStats(), e);
             }
         }
     }
 
     public static void sendActualWorldBorder(ServerPlayerEntity player) {
         // Send the actual world border OwO
-        ServerWorld world = player.getServerWorld();
-        ResourceLocation dimensionId = world.getDimensionKey().getLocation();
+        ServerWorld world = player.getLevel();
+        ResourceLocation dimensionId = world.dimension().location();
         if (DISABLED_DIM_IDS.contains(dimensionId)) {
-            player.connection.sendPacket(new SWorldBorderPacket(world.getWorldBorder(), SWorldBorderPacket.Action.INITIALIZE));
+            player.connection.send(new SWorldBorderPacket(world.getWorldBorder(), SWorldBorderPacket.Action.INITIALIZE));
         }
     }
 

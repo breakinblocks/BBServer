@@ -12,31 +12,31 @@ import net.minecraftforge.fml.LogicalSidedProvider;
 public class ChatUtil {
     public static StringTextComponent coloredString(String message, TextFormatting color) {
         StringTextComponent text = new StringTextComponent(message);
-        text.getStyle().applyFormatting(color);
+        text.getStyle().applyFormat(color);
         return text;
     }
 
     public static void broadcastMessage(String message, TextFormatting color) {
-        ((MinecraftServer) LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER)).getPlayerList().func_232641_a_(
+        ((MinecraftServer) LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER)).getPlayerList().broadcastMessage(
                 coloredString(message, color),
                 ChatType.CHAT,
-                Util.DUMMY_UUID
+                Util.NIL_UUID
         );
     }
 
     public static void broadcastMessage(String message) {
-        ((MinecraftServer) LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER)).getPlayerList().func_232641_a_(
+        ((MinecraftServer) LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER)).getPlayerList().broadcastMessage(
                 new StringTextComponent(message),
                 ChatType.CHAT,
-                Util.DUMMY_UUID
+                Util.NIL_UUID
         );
     }
 
     public static void sendMessage(ICommandSource target, String message, TextFormatting color) {
-        target.sendMessage(coloredString(message, color), Util.DUMMY_UUID);
+        target.sendMessage(coloredString(message, color), Util.NIL_UUID);
     }
 
     public static void sendMessage(ICommandSource target, String message) {
-        target.sendMessage(new StringTextComponent(message), Util.DUMMY_UUID);
+        target.sendMessage(new StringTextComponent(message), Util.NIL_UUID);
     }
 }

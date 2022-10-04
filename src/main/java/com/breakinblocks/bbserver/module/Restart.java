@@ -90,7 +90,7 @@ public class Restart {
         FileUtils.touch(new File(BBServerConfig.COMMON.restart.flag.get()));
         MiscUtil.sync(() -> {
             ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE);
-            MiscUtil.getServer().initiateShutdown(false);
+            MiscUtil.getServer().halt(false);
         });
     }
 }

@@ -48,16 +48,16 @@ public class Cull {
     }
 
     private static void logEntityCull(Entity entity) {
-        PlayerEntity player = entity.world.getClosestPlayer(entity.getPosX(), entity.getPosY(), entity.getPosZ(), -1, p -> true);
+        PlayerEntity player = entity.level.getNearestPlayer(entity.getX(), entity.getY(), entity.getZ(), -1, p -> true);
         if (player == null) {
             if (BBServerConfig.COMMON.cull.log.get())
                 LOGGER.info("Culled " + entity.getName());
         } else {
-            int distance = (int) (player.getDistance(entity));
+            int distance = (int) (player.distanceTo(entity));
             if (BBServerConfig.COMMON.cull.log.get())
                 LOGGER.info(String.format("Culled %s (%d m away from %s)", entity.getName(), distance, player.getName()));
             if (BBServerConfig.COMMON.cull.notify.get())
-                player.sendMessage(new StringTextComponent(String.format("Culled %s (%d m away)", entity.getName(), distance)), Util.DUMMY_UUID);
+                player.sendMessage(new StringTextComponent(String.format("Culled %s (%d m away)", entity.getName(), distance)), Util.NIL_UUID);
         }
     }
 

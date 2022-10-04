@@ -30,6 +30,6 @@ public class MiscUtil {
      * Run on the main server thread
      */
     public static void sync(Runnable r) {
-        getServer().runAsync(r);
+        getServer().submit(r);
     }
 }

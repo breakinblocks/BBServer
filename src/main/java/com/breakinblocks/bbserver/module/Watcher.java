@@ -71,7 +71,7 @@ public final class Watcher {
                     // Sometimes the file is empty then written to later
                     if (filePath.toFile().length() <= 0) continue;
                     //BBServer.log.info(filePath + " has a callback");
-                    if (!MiscUtil.getServer().isServerRunning()) continue;
+                    if (!MiscUtil.getServer().isRunning()) continue;
                     // Schedule or Reschedule
                     TimerTask task = scheduledTasks.compute(yay, (runnable, lastTask) -> {
                         if (lastTask != null)
@@ -104,12 +104,12 @@ public final class Watcher {
         if (!MiscUtil.getServer().isDedicatedServer()) return;
 
         // Ops reloading
-        if (BBServerConfig.COMMON.watcher.ops.get()) watch(PlayerList.FILE_OPS, () -> MiscUtil.sync(() -> {
+        if (BBServerConfig.COMMON.watcher.ops.get()) watch(PlayerList.OPLIST_FILE, () -> MiscUtil.sync(() -> {
             try {
                 PlayerList playerList = MiscUtil.getServer().getPlayerList();
-                playerList.getOppedPlayers().readSavedFile();
+                playerList.getOps().load();
                 // Have to update access levels too
-                playerList.getPlayers().forEach(playerList::updatePermissionLevel);
+                playerList.getPlayers().forEach(playerList::sendPlayerPermissionLevel);
                 LOGGER.info("Ops reloaded");
             } catch (IOException e) {
                 LOGGER.error("Failed to reload ops", e);
@@ -117,9 +117,9 @@ public final class Watcher {
         }));
 
         // Whitelist reloading
-        if (BBServerConfig.COMMON.watcher.whitelist.get()) watch(PlayerList.FILE_WHITELIST, () -> MiscUtil.sync(() -> {
+        if (BBServerConfig.COMMON.watcher.whitelist.get()) watch(PlayerList.WHITELIST_FILE, () -> MiscUtil.sync(() -> {
             try {
-                MiscUtil.getServer().getPlayerList().getWhitelistedPlayers().readSavedFile();
+                MiscUtil.getServer().getPlayerList().getWhiteList().load();
                 LOGGER.info("Whitelist reloaded");
             } catch (IOException e) {
                 LOGGER.error("Failed to reload whitelist", e);

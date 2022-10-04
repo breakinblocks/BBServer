@@ -13,8 +13,11 @@ val jei_mc_version: String by project
 val jei_version: String by project
 val ftb_backups_fileid: String by project
 
+@Suppress("DSL_SCOPE_VIOLATION") // Workaround for https://youtrack.jetbrains.com/issue/KTIJ-19370.
 plugins {
-    id("net.minecraftforge.gradle")
+    alias(libs.plugins.gradle.versions)
+    alias(libs.plugins.forge.gradle.three)
+    alias(libs.plugins.parchment.librarian)
 }
 
 group = "com.breakinblocks.bbserver"

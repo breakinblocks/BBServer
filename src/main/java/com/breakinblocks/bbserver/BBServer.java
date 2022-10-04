@@ -43,7 +43,7 @@ public class BBServer {
         if (event.getServer().isDedicatedServer()) {
             // Restart Module
             if (BBServerConfig.COMMON.restart.command.get())
-                new CommandRestart().register(event.getServer().getCommandManager().getDispatcher());
+                new CommandRestart().register(event.getServer().getCommands().getDispatcher());
             if (BBServerConfig.COMMON.restart.mode.get() >= 0) Restart.createTasks();
             // Watcher Module
             Watcher.setup();
