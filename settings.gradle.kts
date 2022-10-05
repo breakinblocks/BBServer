@@ -29,3 +29,5 @@ pluginManagement {
 }
 
 rootProject.name = "bbserver"
+
+include("bbserver-forge")
