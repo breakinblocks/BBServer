@@ -1,8 +1,8 @@
 package com.breakinblocks.bbserver.util;
 
 import net.minecraft.server.MinecraftServer;
+import net.minecraftforge.common.util.LogicalSidedProvider;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.LogicalSidedProvider;
 
 import java.time.Duration;
 import java.time.temporal.TemporalUnit;
@@ -10,7 +10,7 @@ import java.util.TimerTask;
 
 public class MiscUtil {
     public static MinecraftServer getServer() {
-        return LogicalSidedProvider.INSTANCE.get(LogicalSide.SERVER);
+        return (MinecraftServer) LogicalSidedProvider.WORKQUEUE.get(LogicalSide.SERVER);
     }
 
     public static TimerTask task(final Runnable r) {

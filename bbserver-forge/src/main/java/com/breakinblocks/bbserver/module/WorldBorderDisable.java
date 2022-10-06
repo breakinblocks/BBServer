@@ -2,22 +2,19 @@ package com.breakinblocks.bbserver.module;
 
 import com.breakinblocks.bbserver.BBServerConfig;
 import com.google.common.collect.ImmutableSet;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.play.server.SWorldBorderPacket;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.world.DimensionType;
-import net.minecraft.world.IWorld;
-import net.minecraft.world.border.IBorderListener;
-import net.minecraft.world.border.WorldBorder;
-import net.minecraft.world.server.ServerWorld;
+import net.minecraft.network.protocol.game.ClientboundInitializeBorderPacket;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.border.BorderChangeListener;
+import net.minecraft.world.level.border.WorldBorder;
+import net.minecraft.world.level.dimension.DimensionType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -35,76 +32,50 @@ import java.util.List;
  */
 public final class WorldBorderDisable {
 
-    @SuppressWarnings("UnstableApiUsage")
     public static final ImmutableSet<ResourceLocation> DISABLED_DIM_IDS = BBServerConfig.COMMON.fixes.noWorldBorderDimIds.get().stream()
             .map(ResourceLocation::new)
             .collect(ImmutableSet.toImmutableSet());
-    public static final Field field_listener;
-    public static final double WORLD_BORDER_DEFAULT_SIZE = 6.0E7D;
-    private static final Logger LOGGER = LogManager.getLogger();
 
-    static {
-        // net.minecraft.world.border.WorldBorder field_177758_a #listeners
-        Field field;
-        try {
-            field = WorldBorder.class.getDeclaredField("listeners");
-        } catch (NoSuchFieldException ignored) {
-            try {
-                //noinspection JavaReflectionMemberAccess
-                field = WorldBorder.class.getDeclaredField("field_177758_a");
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException("Could not find field 'borderListener' in 'ServerWorld'", e);
-            }
-        }
-        field.setAccessible(true);
-        field_listener = field;
-    }
+    public static final double WORLD_BORDER_DEFAULT_SIZE = 6.0E7D;
 
     @SubscribeEvent
     public static void onWorldLoad(WorldEvent.Load event) {
-        IWorld tempWorld = event.getWorld();
-        if (!(tempWorld instanceof ServerWorld)) return;
-        ServerWorld world = (ServerWorld) tempWorld;
+        LevelAccessor tempWorld = event.getWorld();
+        if (!(tempWorld instanceof ServerLevel world)) return;
         ResourceLocation dimensionId = world.dimension().location();
 
         if (DISABLED_DIM_IDS.contains(dimensionId) && !DimensionType.OVERWORLD_LOCATION.location().equals(dimensionId)) {
-            List<IBorderListener> originalListeners;
-            try {
-                WorldBorder worldBorder = world.getWorldBorder();
-                //noinspection unchecked
-                originalListeners = (List<IBorderListener>) field_listener.get(worldBorder);
-                // remove existing listeners
-                originalListeners.clear();
-                // set the world border to default limit
-                world.getWorldBorder().setSize(WORLD_BORDER_DEFAULT_SIZE);
-            } catch (IllegalAccessException e) {
-                LOGGER.warn("Failed to replace borderListener for DIM " + world.dimension() + ": " + world.gatherChunkSourceStats(), e);
-            }
+            WorldBorder worldBorder = world.getWorldBorder();
+            List<BorderChangeListener> originalListeners = worldBorder.listeners;
+            // remove existing listeners
+            originalListeners.clear();
+            // set the world border to default limit
+            world.getWorldBorder().setSize(WORLD_BORDER_DEFAULT_SIZE);
         }
     }
 
-    public static void sendActualWorldBorder(ServerPlayerEntity player) {
+    public static void sendActualWorldBorder(ServerPlayer player) {
         // Send the actual world border OwO
-        ServerWorld world = player.getLevel();
+        ServerLevel world = player.getLevel();
         ResourceLocation dimensionId = world.dimension().location();
         if (DISABLED_DIM_IDS.contains(dimensionId)) {
-            player.connection.send(new SWorldBorderPacket(world.getWorldBorder(), SWorldBorderPacket.Action.INITIALIZE));
+            player.connection.send(new ClientboundInitializeBorderPacket(world.getWorldBorder()));
         }
     }
 
     @SubscribeEvent
     public static void onLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
-        sendActualWorldBorder((ServerPlayerEntity) event.getPlayer());
+        sendActualWorldBorder((ServerPlayer) event.getPlayer());
     }
 
     @SubscribeEvent
     public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
-        sendActualWorldBorder((ServerPlayerEntity) event.getPlayer());
+        sendActualWorldBorder((ServerPlayer) event.getPlayer());
     }
 
     @SubscribeEvent
     public static void onDimensionChange(PlayerEvent.PlayerChangedDimensionEvent event) {
-        sendActualWorldBorder((ServerPlayerEntity) event.getPlayer());
+        sendActualWorldBorder((ServerPlayer) event.getPlayer());
     }
 
     public static void init() {

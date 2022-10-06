@@ -11,7 +11,6 @@ val mappings_channel: String by project
 val mappings_version: String by project
 val jei_mc_version: String by project
 val jei_version: String by project
-val ftb_backups_fileid: String by project
 
 @Suppress("DSL_SCOPE_VIOLATION") // Workaround for https://youtrack.jetbrains.com/issue/KTIJ-19370.
 plugins {
@@ -25,12 +24,13 @@ version = mod_version
 base.archivesBaseName = "bbserver-${mc_version}"
 
 configure<JavaPluginConvention> {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 configure<UserDevExtension> {
     mappings(mappings_channel, mappings_version)
+    accessTransformer(file("src/main/resources/META-INF/accesstransformer.cfg"))
     runs {
         create("client") {
             workingDirectory(file("run"))
@@ -64,23 +64,11 @@ repositories {
             includeGroup("mezz.jei")
         }
     }
-
-    // FTB Backups
-    maven {
-        url = uri("https://www.cursemaven.com")
-        content {
-            includeGroup("curse.maven")
-        }
-    }
 }
 
 dependencies {
     add("minecraft", "net.minecraftforge:forge:${mc_version}-${forge_version}")
     runtimeOnly(fg.deobf("mezz.jei:jei-${jei_mc_version}:${jei_version}"))
-
-    // Curse Maven Mods
-    compileOnly(fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}"))
-    runtimeOnly(fg.deobf("curse.maven:ftb-backups-314904:${ftb_backups_fileid}"))
 }
 
 tasks.named<ProcessResources>("processResources") {

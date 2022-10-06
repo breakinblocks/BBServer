@@ -3,7 +3,7 @@ package com.breakinblocks.bbserver.module;
 import com.breakinblocks.bbserver.BBServerConfig;
 import com.breakinblocks.bbserver.util.ChatUtil;
 import com.breakinblocks.bbserver.util.MiscUtil;
-import net.minecraft.util.text.TextFormatting;
+import net.minecraft.ChatFormatting;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.LogManager;
@@ -60,7 +60,7 @@ public class Restart {
 
         ChatUtil.broadcastMessage(
                 "Server restarts in " + DurationFormatUtils.formatDurationWords(Duration.between(now, restartTime).toMillis(), true, true),
-                TextFormatting.LIGHT_PURPLE);
+                ChatFormatting.LIGHT_PURPLE);
 
         // Notifications
         for (long secondsPrior : BBServerConfig.COMMON.restart.notifications.get()) {
@@ -69,7 +69,7 @@ public class Restart {
             timer.schedule(MiscUtil.task(() -> {
                 ChatUtil.broadcastMessage(
                         "Server restarts in " + DurationFormatUtils.formatDurationWords(Duration.between(notificationTime, restartTime).toMillis(), true, true),
-                        TextFormatting.LIGHT_PURPLE);
+                        ChatFormatting.LIGHT_PURPLE);
             }), Date.from(notificationTime));
         }
 
@@ -79,7 +79,7 @@ public class Restart {
                 restart();
             } catch (IOException e) {
                 LOGGER.error("Failed to create the restart flag file.");
-                ChatUtil.broadcastMessage("Server failed to restart.", TextFormatting.DARK_RED);
+                ChatUtil.broadcastMessage("Server failed to restart.", ChatFormatting.DARK_RED);
             }
         }), Date.from(restartTime));
     }
@@ -89,7 +89,7 @@ public class Restart {
         restarting = true;
         FileUtils.touch(new File(BBServerConfig.COMMON.restart.flag.get()));
         MiscUtil.sync(() -> {
-            ChatUtil.broadcastMessage("Restarting...", TextFormatting.LIGHT_PURPLE);
+            ChatUtil.broadcastMessage("Restarting...", ChatFormatting.LIGHT_PURPLE);
             MiscUtil.getServer().halt(false);
         });
     }

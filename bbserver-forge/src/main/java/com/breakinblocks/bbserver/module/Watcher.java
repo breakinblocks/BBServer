@@ -2,7 +2,7 @@ package com.breakinblocks.bbserver.module;
 
 import com.breakinblocks.bbserver.BBServerConfig;
 import com.breakinblocks.bbserver.util.MiscUtil;
-import net.minecraft.server.management.PlayerList;
+import net.minecraft.server.players.PlayerList;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

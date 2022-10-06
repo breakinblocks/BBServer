@@ -1,11 +1,11 @@
 package com.breakinblocks.bbserver.module;
 
 import com.breakinblocks.bbserver.BBServerConfig;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.Util;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.Util;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingSpawnEvent;
@@ -48,7 +48,7 @@ public class Cull {
     }
 
     private static void logEntityCull(Entity entity) {
-        PlayerEntity player = entity.level.getNearestPlayer(entity.getX(), entity.getY(), entity.getZ(), -1, p -> true);
+        Player player = entity.level.getNearestPlayer(entity.getX(), entity.getY(), entity.getZ(), -1, p -> true);
         if (player == null) {
             if (BBServerConfig.COMMON.cull.log.get())
                 LOGGER.info("Culled " + entity.getName());
@@ -57,7 +57,7 @@ public class Cull {
             if (BBServerConfig.COMMON.cull.log.get())
                 LOGGER.info(String.format("Culled %s (%d m away from %s)", entity.getName(), distance, player.getName()));
             if (BBServerConfig.COMMON.cull.notify.get())
-                player.sendMessage(new StringTextComponent(String.format("Culled %s (%d m away)", entity.getName(), distance)), Util.NIL_UUID);
+                player.sendMessage(new TextComponent(String.format("Culled %s (%d m away)", entity.getName(), distance)), Util.NIL_UUID);
         }
     }
 

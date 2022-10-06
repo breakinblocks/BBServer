@@ -36,16 +36,11 @@ public class BBServerConfig {
         }
 
         public static class Fixes {
-            public final BooleanValue backupFreeze;
             public final ConfigValue<List<String>> noWorldBorderDimIds;
 
             public Fixes(Builder builder) {
                 builder.comment("Fixes for various bugs")
                         .push("fixes");
-                backupFreeze = builder
-                        .worldRestart()
-                        .comment("Chunkloads all current loaded dimensions and any newly loaded dimensions while a backup is ongoing to prevent dimensions being flushed (when they are unloaded)")
-                        .define("backupFreeze", false);
                 noWorldBorderDimIds = builder
                         .worldRestart()
                         .comment("Disable the world border in these dimensions e.g. `minecraft:the_end` (does not work for overworld!)")
